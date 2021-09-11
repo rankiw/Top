@@ -263,13 +263,14 @@ class Top(chip):
 
             loc = (float(hcell_loc[0]) + float(hcell_inst_loc[0] + abs(self.dic_tile2poly[hcell_name][0][0])),
                    float(hcell_loc[1]) + float(hcell_inst_loc[1] + abs(self.dic_tile2poly[hcell_name][0][1])))
-
+            loc = float(format(loc[0],".4f")),float(format(loc[1],".4f"))
             hcell_inst_name = inst + "_" + hcell_inst
-            self.dic_inst2master[hcell_inst_name] = [locals()[hcell_name+'_inst2master'][hcell_inst][0], loc, top_inst2master[inst][2]]
+            self.dic_inst2master[hcell_inst_name] = [locals()[hcell_name+'_inst2master'][hcell_inst][0],
+                                                     loc, top_inst2master[inst][2]]
 
       self.dic_inst2master[inst] = top_inst2master[inst]
 
-    #printDict(self.dic_inst2master)
+    printDict(self.dic_inst2master)
     #self.tile2inst()
 
   def tile2inst(self):
