@@ -9,10 +9,10 @@ def printDict(my_dict):
   for dict_key in my_dict.keys():
     if isinstance(my_dict[dict_key], str):
       print(dict_key + ' : ' + my_dict[dict_key])
-    elif isinstance(dict_key[dict_key], list):
-      dict_value = dict_key[dict_key]
+    elif isinstance(my_dict[dict_key], list):
+      dict_value = my_dict[dict_key]
       dict_value_list = [str(i) for i in dict_value]
-      dict_value_list2str = ''.join(dict_value_list)
+      dict_value_list2str = ' '.join(dict_value_list)
       print(dict_key + ' : ' + dict_value_list2str)
 
 
