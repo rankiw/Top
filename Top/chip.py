@@ -270,14 +270,15 @@ class Top(chip):
 
       self.dic_inst2master[inst] = top_inst2master[inst]
 
-    printDict(self.dic_inst2master)
-    #self.tile2inst()
+    #printDict(self.dic_inst2master)
+    #return self.dic_tile2poly
+    self.tile2inst()
 
   def tile2inst(self):
     db = {}
     db['dic_tile2poly'] = self.dic_tile2poly
     db['dic_inst2master'] = self.dic_inst2master
-    with MkFile(file_name='getshape.pkl', mode='wb', type='data') as file:
+    with MkFile(file_name='top.pkl', mode='wb', type='data') as file:
       pickle.dump(db, file)
     # Generate color for master tiles
     c = colors.colors()
@@ -290,13 +291,14 @@ class Top(chip):
       shape = ref_poly.shape[0]
       edges = {}
       for p in range(shape):
-        edge_key = (ref_poly[p % shape][0], ref_poly[p % shape][1], ref_poly[(p + 1) % shape][0],
-                    ref_poly[(p + 1) % shape][1])
+        edge_key = (ref_poly[p % shape][0], ref_poly[p % shape][1],
+                    ref_poly[(p + 1) % shape][0], ref_poly[(p + 1) % shape][1])
         edges[edge_key] = edge_key
 
       x_min, y_min = ref_poly.min(axis=0)
       x_max, y_max = ref_poly.max(axis=0)
       origin = (x_min, y_min, x_max, y_max)
+
       dic_meta2tile[master] = type(master, (), {'edges': edges,
                                                 'allowedge': edges,
                                                 'ref_name': master,
@@ -311,17 +313,25 @@ class Top(chip):
     for inst in self.dic_inst2master:
       master = self.dic_inst2master[inst][0]
       if master not in self.dic_tile2poly: continue
-      self.dic_tiles[inst] = Tile_Instance(dic_meta2tile[master])
+
+      self.dic_tiles[inst] = TileInstance(dic_meta2tile[master])
+
       self.dic_tiles[inst].inst_name = inst
       self.dic_tiles[inst].inst_loc = self.dic_inst2master[inst][1]
       self.dic_tiles[inst].inst_orient = self.dic_inst2master[inst][2]
+
       x_min, y_min, x_max, y_max = self.dic_tiles[inst].tile_master.origin
+
       self.dic_tiles[inst].inst_size = (x_max - x_min, y_max - y_min)
+
       tmp1 = np.array(
-        [[abs(x_min) + self.dic_tiles[inst].inst_loc[0], abs(y_min) + self.dic_tiles[inst].inst_loc[1]] for i in
-         range(self.dic_tiles[inst].tile_master.ref_poly.shape[0])])
-      tmp2 = np.array([dic_orientation[self.dic_tiles[inst].inst_orient](point) for point in
-                       self.dic_tiles[inst].tile_master.ref_poly])
+        [[abs(x_min) + self.dic_tiles[inst].inst_loc[0], abs(y_min) + self.dic_tiles[inst].inst_loc[1]]
+         for i in range(self.dic_tiles[inst].tile_master.ref_poly.shape[0])])
+
+      tmp2 = np.array(
+        [dic_orientation[self.dic_tiles[inst].inst_orient](point)
+        for point in self.dic_tiles[inst].tile_master.ref_poly])
+
       tmp = tmp1 + tmp2
       self.dic_tiles[inst].inst_poly = tmp
 
@@ -330,8 +340,9 @@ class Top(chip):
       shape = tmp2.shape[0]
       self.dic_inst2ref[inst] = {
         (tmp[p % shape][0], tmp[p % shape][1], tmp[(p + 1) % shape][0], tmp[(p + 1) % shape][1]): (
-          tmp3[p % shape][0], tmp3[p % shape][1], tmp3[(p + 1) % shape][0], tmp3[(p + 1) % shape][1]) for p in
-        range(shape)}
+          tmp3[p % shape][0], tmp3[p % shape][1], tmp3[(p + 1) % shape][0], tmp3[(p + 1) % shape][1])
+        for p in range(shape)}
+
       # reverse key & value
       self.dic_ref2inst[inst] = {v: k for k, v in self.dic_inst2ref[inst].items()}
 
@@ -339,9 +350,13 @@ class Top(chip):
     fig, ax = plt.subplots()
     for inst in self.dic_tiles:
       if self.dic_tiles[inst].inst_poly.shape[0] == 1: continue
+
       tmp = np.row_stack((self.dic_tiles[inst].inst_poly, np.array(self.dic_tiles[inst].inst_poly[0])))
+
       vertices = np.array(tmp, float)
+
       codes = [Path.MOVETO] + [Path.LINETO] * (self.dic_tiles[inst].inst_poly.shape[0] - 1) + [Path.CLOSEPOLY]
+
       path = Path(vertices, codes)
       edgecolor = 'red' if inst in special else 'black'
       if len(special):
@@ -371,8 +386,9 @@ if __name__ == "__main__":
   # tmp.parsetopdef(file="def/*.def.gz", read_from_pkl=False)
   #print(tmp.parseCompDef(file='def/*.def.gz'))
   #print(tmp.parseBboxDef(file='def/rep_llc_mc1_tl_t.def.gz'))
-  print(tmp.parseTopDef(file='def/*.def.gz'))
-  # tmp.getreuse()
+  #print(tmp.parseTopDef(file='def/*.def.gz'))
+  test_dic=tmp.parseTopDef(file='def/*.def.gz')
+  tmp.plot2()
   end = datetime.datetime.now()
   # tmp.plot2()
   print(end - begin)

@@ -32,8 +32,8 @@ class MkFile(object):
       3. use param gzip=True to gzip output file
 
       All files will be created under username/(rpt|log|data)/file
-
       Usage/Example:
+
           1. with MkFile(file_name, mode = 'w+', type = 'rpt', username = 'USER') as f:
           2. with MkFile(file_name, mode = 'rb', type = 'date', username = 'USER' ) as f:
           2. with MkFile(file_name, mode = 'w', type = 'date', username = 'USER',gzip=True ) as f:
